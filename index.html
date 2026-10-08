@@ -85,7 +85,7 @@
 
     <!-- Dashboard View -->
     <div id="dashboard-view" class="max-w-5xl mx-auto p-4 sm:p-6 transition-opacity duration-300">
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-10 mt-4 sm:mt-6 gap-4">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 mt-4 sm:mt-6 gap-4">
             <div>
                 <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-3">
                     <i class="fa-solid fa-bed text-indigo-600"></i>
@@ -100,27 +100,61 @@
                 <button onclick="window.location.reload()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg font-medium flex-1 sm:flex-none justify-center flex items-center gap-2 transition-colors shadow-sm">
                     <i class="fa-solid fa-arrows-rotate"></i> Refresh
                 </button>
-                <button onclick="app.createNewReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium flex-1 sm:flex-none justify-center flex items-center gap-2 transition-colors shadow-sm">
+                <button onclick="app.promptNewAuditModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium flex-1 sm:flex-none justify-center flex items-center gap-2 transition-colors shadow-sm">
                     <i class="fa-solid fa-plus"></i> New Room Audit
                 </button>
             </div>
         </header>
 
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
-                <h2 class="text-lg font-semibold text-slate-800">Recent Audits</h2>
-                <span id="sync-status-indicator" class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium"><i class="fa-solid fa-cloud mr-1"></i> Live Cloud Sync</span>
+        <!-- Filter Tabs -->
+        <div class="flex items-center justify-between mb-4 bg-slate-200/60 p-1 rounded-xl">
+            <div class="flex gap-1 w-full sm:w-auto">
+                <button id="tab-my" onclick="app.setFilter('my')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-white text-indigo-600 shadow-sm">
+                    <i class="fa-solid fa-user mr-1.5"></i> My Audits
+                </button>
+                <button id="tab-all" onclick="app.setFilter('all')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold text-sm transition-all text-slate-600 hover:text-slate-900">
+                    <i class="fa-solid fa-users mr-1.5"></i> All Team Audits
+                </button>
             </div>
-            
+            <span id="sync-status-indicator" class="hidden sm:inline-flex text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium items-center gap-1">
+                <i class="fa-solid fa-cloud"></i> Live Sync
+            </span>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div id="empty-state" class="p-12 text-center text-slate-500 flex flex-col items-center hidden">
                 <i class="fa-solid fa-clipboard-check text-5xl text-slate-300 mb-4"></i>
-                <p class="text-lg">No room audits filed yet.</p>
-                <p class="text-sm mt-1">Click "New Room Audit" to start an inspection.</p>
+                <p class="text-lg font-medium text-slate-700">No audits found in this view.</p>
+                <p class="text-sm mt-1 text-slate-500">Click "New Room Audit" to start an inspection.</p>
             </div>
 
             <ul id="report-list" class="divide-y divide-slate-100">
                 <!-- Reports injected via JS -->
             </ul>
+        </div>
+    </div>
+
+    <!-- Modal: New Audit Room Prompt -->
+    <div id="new-audit-modal" class="fixed inset-0 bg-slate-900/50 z-50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100">
+            <h3 class="text-xl font-bold text-slate-900 mb-1">Start New Room Audit</h3>
+            <p class="text-sm text-slate-500 mb-5">Assign details to prevent double-auditing across team members.</p>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Room Number *</label>
+                    <input type="text" id="modal-room-no" placeholder="e.g. 401" class="w-full border border-slate-300 rounded-lg p-2.5 text-base focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Auditor Name *</label>
+                    <input type="text" id="modal-auditor-name" placeholder="Your Name" class="w-full border border-slate-300 rounded-lg p-2.5 text-base focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 justify-end">
+                <button onclick="app.closeNewAuditModal()" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-sm transition-colors">Cancel</button>
+                <button onclick="app.createNewReportFromModal()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm">Start Inspection</button>
+            </div>
         </div>
     </div>
 
@@ -166,6 +200,11 @@
             </div>
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <span id="save-status" class="hidden sm:inline text-sm text-emerald-600 font-medium mr-2"><i class="fa-solid fa-cloud-check mr-1"></i> Synced to Cloud</span>
+                
+                <button id="complete-toggle-btn" onclick="app.toggleCompleteStatus()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 text-sm transition-colors">
+                    <i class="fa-solid fa-circle-check"></i> Mark Completed
+                </button>
+
                 <button onclick="app.refreshReport()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 p-2 sm:px-4 sm:py-2 rounded-lg font-medium flex items-center justify-center transition-colors" title="Clear form">
                     <i class="fa-solid fa-trash-can text-slate-500"></i><span class="hidden sm:inline ml-2">Clear</span>
                 </button>
@@ -237,7 +276,7 @@
 
     <script>
         // -------------------------------------------------------------
-        // FIREBASE CLOUD CONFIGURATION (ROOM SIMULATION PROJECT)
+        // FIREBASE CLOUD CONFIGURATION
         // -------------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyBGNKq-fUoxsk8Qm3kfAv0rZ4k28ANEsq8",
@@ -329,9 +368,10 @@
         const app = {
             reports: [],
             currentReportId: null,
-            
+            filterMode: 'my', // 'my' or 'all'
+            currentAuditorName: localStorage.getItem('last_auditor_name') || '',
+
             init() {
-                // Real-time Cloud Listener across all devices
                 auditsCollection.onSnapshot(snapshot => {
                     this.reports = snapshot.docs.map(doc => ({
                         id: doc.id,
@@ -348,6 +388,78 @@
                         this.renderDashboard();
                     }
                 }, err => console.error("Cloud connection failed:", err));
+            },
+
+            setFilter(mode) {
+                this.filterMode = mode;
+                document.getElementById('tab-my').className = mode === 'my' 
+                    ? "flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-white text-indigo-600 shadow-sm"
+                    : "flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold text-sm transition-all text-slate-600 hover:text-slate-900";
+
+                document.getElementById('tab-all').className = mode === 'all' 
+                    ? "flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-white text-indigo-600 shadow-sm"
+                    : "flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold text-sm transition-all text-slate-600 hover:text-slate-900";
+
+                this.renderDashboard();
+            },
+
+            promptNewAuditModal() {
+                document.getElementById('modal-auditor-name').value = this.currentAuditorName;
+                document.getElementById('modal-room-no').value = '';
+                document.getElementById('new-audit-modal').classList.remove('hidden');
+                document.getElementById('modal-room-no').focus();
+            },
+
+            closeNewAuditModal() {
+                document.getElementById('new-audit-modal').classList.add('hidden');
+            },
+
+            async createNewReportFromModal() {
+                const roomNo = document.getElementById('modal-room-no').value.trim();
+                const auditor = document.getElementById('modal-auditor-name').value.trim();
+
+                if (!roomNo || !auditor) {
+                    alert("Please fill in both Room Number and Auditor Name.");
+                    return;
+                }
+
+                this.currentAuditorName = auditor;
+                localStorage.setItem('last_auditor_name', auditor);
+
+                const id = Date.now().toString();
+                const newReport = {
+                    id: id,
+                    createdAt: Date.now(),
+                    isCompleted: false,
+                    meta: {
+                        date: new Date().toISOString().split('T')[0],
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
+                        auditor: auditor, 
+                        roomNo: roomNo, 
+                        observation: ''
+                    },
+                    generalPhotos: [],
+                    items: {} 
+                };
+                
+                AUDIT_QUESTIONS.forEach((q, idx) => {
+                    newReport.items[idx] = { status: null, remarks: '', photos: [] };
+                });
+
+                await auditsCollection.doc(id).set(newReport);
+                this.closeNewAuditModal();
+                this.currentReportId = id;
+                this.renderEditor();
+                this.showEditor();
+            },
+
+            toggleCompleteStatus() {
+                const report = this.getCurrentReport();
+                if (report) {
+                    report.isCompleted = !report.isCompleted;
+                    this.saveToCloud();
+                    this.renderEditor();
+                }
             },
 
             cleanUpTrash() {
@@ -405,29 +517,6 @@
                 window.scrollTo(0, 0);
             },
 
-            async createNewReport() {
-                const id = Date.now().toString();
-                const newReport = {
-                    id: id,
-                    createdAt: Date.now(),
-                    meta: {
-                        date: new Date().toISOString().split('T')[0],
-                        time: '', auditor: '', roomNo: '', observation: ''
-                    },
-                    generalPhotos: [],
-                    items: {} 
-                };
-                
-                AUDIT_QUESTIONS.forEach((q, idx) => {
-                    newReport.items[idx] = { status: null, remarks: '', photos: [] };
-                });
-
-                await auditsCollection.doc(id).set(newReport);
-                this.currentReportId = id;
-                this.renderEditor();
-                this.showEditor();
-            },
-
             openReport(id) {
                 this.currentReportId = id;
                 this.renderEditor();
@@ -454,10 +543,7 @@
                 if(confirm("Clear this report?")) {
                     const report = this.getCurrentReport();
                     if(report) {
-                        report.meta = {
-                            date: new Date().toISOString().split('T')[0],
-                            time: '', auditor: '', roomNo: '', observation: ''
-                        };
+                        report.meta.observation = '';
                         report.generalPhotos = [];
                         AUDIT_QUESTIONS.forEach((q, idx) => {
                             report.items[idx] = { status: null, remarks: '', photos: [] };
@@ -472,6 +558,10 @@
                 const report = this.getCurrentReport();
                 if (report) {
                     report.meta[field] = value;
+                    if (field === 'auditor') {
+                        this.currentAuditorName = value;
+                        localStorage.setItem('last_auditor_name', value);
+                    }
                     if (field === 'observation') {
                         document.getElementById('print-meta-observation').textContent = value;
                     }
@@ -602,7 +692,13 @@
                 
                 list.innerHTML = '';
                 
-                const activeReports = this.reports.filter(r => !r.deletedAt);
+                let activeReports = this.reports.filter(r => !r.deletedAt);
+
+                if (this.filterMode === 'my' && this.currentAuditorName) {
+                    activeReports = activeReports.filter(r => 
+                        (r.meta.auditor || '').toLowerCase().trim() === this.currentAuditorName.toLowerCase().trim()
+                    );
+                }
 
                 if (activeReports.length === 0) {
                     emptyState.classList.remove('hidden');
@@ -613,9 +709,16 @@
                 emptyState.classList.add('hidden');
                 list.classList.remove('hidden');
 
+                activeReports.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
                 activeReports.forEach(report => {
-                    const roomInfo = report.meta.roomNo ? `Room ${escapeHTML(report.meta.roomNo)}` : "No Room Assigned";
+                    const roomInfo = report.meta.roomNo ? `Room ${escapeHTML(report.meta.roomNo)}` : "No Room";
+                    const auditorInfo = report.meta.auditor ? escapeHTML(report.meta.auditor) : "Unassigned";
                     
+                    const statusBadge = report.isCompleted 
+                        ? `<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-semibold border border-emerald-200"><i class="fa-solid fa-check mr-1"></i> Completed</span>`
+                        : `<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-semibold border border-amber-200"><i class="fa-solid fa-spinner fa-spin mr-1"></i> In Progress</span>`;
+
                     const li = document.createElement('li');
                     li.className = "p-4 hover:bg-slate-50 cursor-pointer flex items-center justify-between group transition-colors";
                     li.onclick = () => this.openReport(report.id);
@@ -624,8 +727,13 @@
                         <div class="flex items-center gap-4">
                             <div class="bg-indigo-100 p-3 rounded-lg text-indigo-600"><i class="fa-solid fa-bed text-xl"></i></div>
                             <div>
-                                <h3 class="font-semibold text-slate-900 text-lg">${roomInfo}</h3>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-semibold text-slate-900 text-lg">${roomInfo}</h3>
+                                    ${statusBadge}
+                                </div>
                                 <div class="flex items-center gap-3 text-sm text-slate-500 mt-1">
+                                    <span><i class="fa-solid fa-user text-xs mr-1"></i> ${auditorInfo}</span>
+                                    <span>•</span>
                                     <span><i class="fa-regular fa-calendar mr-1"></i> ${escapeHTML(report.meta.date)}</span>
                                 </div>
                             </div>
@@ -698,6 +806,16 @@
             renderEditor() {
                 const report = this.getCurrentReport();
                 if (!report) return;
+
+                const toggleBtn = document.getElementById('complete-toggle-btn');
+                if (report.isCompleted) {
+                    toggleBtn.className = "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 text-sm transition-colors";
+                    toggleBtn.innerHTML = `<i class="fa-solid fa-rotate-left"></i> Re-open Audit`;
+                } else {
+                    toggleBtn.className = "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 text-sm transition-colors";
+                    toggleBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Mark Completed`;
+                }
+
                 document.getElementById('meta-date').value = report.meta.date || '';
                 document.getElementById('meta-time').value = report.meta.time || '';
                 document.getElementById('meta-auditor').value = report.meta.auditor || '';
